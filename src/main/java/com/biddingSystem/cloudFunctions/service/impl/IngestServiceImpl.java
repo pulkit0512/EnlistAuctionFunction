@@ -14,7 +14,6 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.Timestamp;
 
 import java.nio.charset.Charset;
-import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -67,12 +66,13 @@ public class IngestServiceImpl implements IngestService {
             LOGGER.log(Level.WARNING, "Unable to ingest in Spanner.");
             return null;
         }
+        LOGGER.info("Auction Id: " + auctionId);
 
         ApiFuture<WriteResult> firestoreIngestion = firestoreIngestAuctionDAO.addAuctionData(auctionId, auctionData);
         try {
             firestoreIngestion.get();
             return auctionId;
-        } catch (ExecutionException | InterruptedException ex) {
+        } catch (Exception ex) {
             LOGGER.log(Level.WARNING, "Unable to ingest in Firestore, deleting spanner entry.");
             spannerIngestAuctionDAO.deleteAuction(auctionId);
             return null;
